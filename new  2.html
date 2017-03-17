@@ -1,0 +1,385 @@
+<script>
+resultTranslate = {
+  слово: //formOfWord
+  {часть речи: //partOfSpeech
+        варианты перевода:[ //variantsTranslation
+          
+        ]
+  },
+  
+}
+templatas = {
+  widget: `
+        <button class="bmkHideButton">X</button>
+        
+        ${translateElement}
+        
+        <form class="bmkController">
+          <select class="bmkFormSelectLang">
+            <option selected="" value="en-ru">en-ru</option>
+            <option value="ru-en">ru-en</option>
+          </select>
+          <textarea class="bmkFormInput" placeholder="Перевести"></textarea>
+          <button class="bmkFormButton">→</button>
+          <button class="bmkFormShowCache">Просмотреть историю запросов</button>
+        </form>
+        <div class="bmkLogo">
+          <p>Переведено сервисом <a href="http://translate.yandex.ru/">«Яндекс.Переводчик»</a></p>
+        </div>
+    `,
+    translateElement : `
+      <div class="translateElement">
+        <table>
+          <tbody>
+            <tr>` +
+              for(formOfWord in resultTranslate) {
+                `<th>${formOfWord} <i>${resultTranslate[formOfWord][partOfSpeech]}</i></th>`
+              }
+            </tr>
+            <tr>
+              var arr = resultTranslate[formOfWord][variantsTranslation];
+              for(var i = 0; i < arr.length; i++) {
+                <td>
+                  <p>arr[i]</p>
+                </td>
+              }
+              <td>
+                <p>получающийся</p>
+                <p>проистекающий</p>
+              </td>
+              <td>
+                <p>приводить</p>
+                <p>следовать</p>
+                <p>проистекать</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+}
+
+
+/*
+var translateElement = (function(){
+  var element = document.createElement('div');
+      element.className = 'translateElement';
+      element.innerHTML = 'Выделите текст мышкой или воспользуйтесь формой';
+  return {
+    'element': element,
+    reloadContent : function(content) {
+      element.innerHTML = content
+    }
+  }
+}())
+*/
+
+var view = {
+  widget : '', //HTMLElement
+  translateElement : '', //HTMLElement результат перевода
+  createWidget : function() {
+      this.createTranslateElement();
+      this.widget = document.createElement('div');
+      this.widget.className = "divTranslate";
+      this.widget.innerHTML = `
+        <button class="bmkHideButton">X</button>
+        <div class="translateElement">
+          ${this.translateElement.outerHTML}
+        </div>
+        <form class="bmkController">
+          <select class="bmkFormSelectLang">
+            <option selected="" value="en-ru">en-ru</option>
+            <option value="ru-en">ru-en</option>
+          </select>
+          <textarea class="bmkFormInput" placeholder="Перевести"></textarea>
+          <button class="bmkFormButton">→</button>
+          <button class="bmkFormShowCache">Просмотреть историю запросов</button>
+        </form>
+        <div class="bmkLogo">
+          <p>Переведено сервисом <a href="http://translate.yandex.ru/">«Яндекс.Переводчик»</a></p>
+        </div>
+    `;
+  },
+  
+  createTranslateElement : function() {
+    this.translateElement = document.createElement('div');
+    this.translateElement.className = "translateElement";
+    this.translateElement.innerHTML = 'yho9yho9';
+  },
+  reloadTranslateElement : function(newTranslateElement) {
+    this.translateElement.parentNode.replaceChild( this.translateElement, newTranslateElement);
+  }
+  
+}
+createWidget: function() {
+      this.createHideButton();
+      this.createTranslateElement();
+      this.createUserControlPanel();
+      this.createLogo();
+      
+      this.widget = document.createElement('div');
+      this.widget.className = 'divTranslate';
+      console.dir(this.components);
+      for (var i in this.components) {
+        //console.log(this.components[i]);
+        //this.widget.innerHTML += this.components[i];
+        this.widget.appendChild(this.components[i]);
+      }
+      document.body.appendChild(this.widget);
+      mediator.widgetCreated();
+    },
+    reloadWidget: function() {
+      this.widget.replaceChild(this.components.HTMLTranslate, this.HTMLTranslate);
+    },
+    
+    createHideButton: function() {
+      this.components.hideButton = document.createElement('button');
+      this.components.hideButton.className = 'bmkHideButton';
+      this.components.hideButton.innerHTML = 'X';
+    },
+    createLogo: function() {
+      this.components.yandexLogo = document.createElement('div');
+      this.components.yandexLogo.className = 'bmkLogo';
+      this.components.yandexLogo.innerHTML = 
+                  '<p>Переведено сервисом ' +
+                 '<a href=http://translate.yandex.ru/>«Яндекс.Переводчик»</a></p>';
+                  
+    },
+    createUserControlPanel: function() {
+      this.components.userControlPanel = document.createElement('form');
+      this.components.userControlPanel.className = 'bmkController';
+      
+      
+      for (var i in this.components.userControlPanel.components) {
+        //console.log(this.components[i]);
+        //this.widget.innerHTML += this.components[i];
+        this.components.userControlPanel.appendChild(
+          this.components.userControlPanel.components[i]);
+      }
+      this.components.userControlPanel.innerHTML = 
+                // '<p>Панель управления:</p>'+
+                 '<select class=bmkFormSelectLang><option selected value=en-ru>en-ru</option>' + 
+                 '<option value=ru-en>ru-en</option></select>' +
+                 '<textarea class=bmkFormInput placeholder=Перевести></textarea>' +
+                 '<button  class=bmkFormButton>\u2192</button>' +
+                 '<button  class=bmkFormShowCache>Просмотреть историю запросов</button>';
+    },
+    createTranslateElement: function() {
+      this.components.HTMLTranslate = document.createElement('div');
+      this.components.HTMLTranslate.className = 'translateElement';
+      this.components.HTMLTranslate.innerHTML = 'Выделите текст мышкой или воспользуйтесь формой';
+    }
+</script>
+
+
+<script>
+
+var assign = {
+  _text: '',
+  _lang: 'en-ru', // направление перевода
+  _ui: 'ru',
+  _flags: 0x000d,
+    getText: function() {
+        return this._text;
+      },
+    setText: function(text) {
+        this._text = text.trim();
+      },
+    isOneWord: function() {
+      return !(~this._text.indexOf(' ')); //
+    },
+    
+}
+
+
+var courier = (function() {
+  function request(path, params) {
+
+    xhr = new XMLHttpRequest();
+    xhr.open('GET', getUrl(path, params) );
+    xhr.send();
+    xhr.onload = function() {
+    
+      mediator.gotResponse(this.responseText);
+      
+      
+      //var response = new ResponseObject(this.responseText);
+      //mediator.gotResponse(response);
+      /*resultObject.setResponse(this.responseText);
+      resultObject.parseResult();
+      resultObject.reformatResult
+      parseResult(this.responseText)
+      mediator.gotResponse(this.responseText);
+      */
+      
+    }
+  }
+  function getUrl(path, params) {
+    var url = '';
+    url += path;
+    for (var prop in params) {   
+      url += '&' + prop + '=' + encodeURIComponent(params[prop]);
+    }
+    return url;
+  }
+  
+  return {
+    send : request
+  }
+})();
+
+var translatorAPI = (function() {
+  
+  var API, yandexDictionary, yandexInterpreter;
+  
+  function getKey() {
+    return encodeURIComponent(this.keys[0]);
+  }
+  
+  yandexDictionaryAPI = {
+    path : 'https://dictionary.yandex.net/api/v1/dicservice.json/lookup?',
+    /* каждый ключ имеет ограниченную квоту на количество переводов 
+    за определенный период времени,
+    больше ключей - больше раз можно воспользоваться API, меняя ключи
+    */
+    keys : [
+      'dict.1.1.20161211T013101Z.4d434f548d2c6487.a0240ec240306be47446e646978bbb2c0f6ed6de'
+    ];
+  };
+  yandexInterpreterAPI = {
+    path : 'https://translate.yandex.net/api/v1.5/tr.json/translate?',
+    keys : [
+      'trnsl.1.1.20161211T003418Z.db5d3b30556edece.4057f1957d715db135b319a576dea6b5c2a6f198'
+    ];
+  }
+  return {
+    selectAPI: function(DB) {
+      switch (DB) { 
+      case 'yandexDictionary': API =  yandexDictionaryAPI;
+        break;
+      case 'yandexInterpreter': API =  yandexInterpreterAPI;
+        break;
+      }
+    },
+    getUrlAPI: function() {
+      if (!API) {
+        throw new Error('Не выбран API');
+      }
+      urlAPI = API.path + 'key=' + getKey.call(API);
+      return urlAPI;
+    }
+  }
+})();
+
+
+
+var view = (function() {
+
+  var widget, //HTMLElement
+  resultBlock, //HTMLElement результат перевода
+  builderResultBlock; // функция преобразования рез-та в HTML
+  function createWidget() {
+      widget = document.createElement('div');
+      widget.className = "divTranslate";
+      widget.innerHTML = `
+        <button class="bmkHideButton">X</button>
+        
+        <div class = "resultBlock">
+          <p>Выделите текст мышкой или воспользуйтесь формой</p>
+        </div
+        
+        <form class="bmkController">
+          <select class="bmkFormSelectLang">
+            <option selected="" value="en-ru">en-ru</option>
+            <option value="ru-en">ru-en</option>
+          </select>
+          <textarea class="bmkFormInput" placeholder="Перевести"></textarea>
+          <button class="bmkFormButton">→</button>
+          <button class="bmkFormShowCache">Просмотреть историю запросов</button>
+        </form>
+        <div class="bmkLogo">
+          <p>Переведено сервисом <a href="http://translate.yandex.ru/">«Яндекс.Переводчик»</a></p>
+        </div>
+    `;
+    resultBlock = widget.getElementsByClassName('resultBlock')[0];
+  }
+  function reloadResultBlock(/*string HTML*/ result) {
+    resultBlock.innerHTML = result;
+  }
+  function result2Table(result) {
+  
+    html = ``;
+    //var table = document.createElement('table');
+  
+    html += 
+    `<table>
+      <caption>${def[i]['text']}</caption>
+      <tr>`;
+        for (i = 0; i < def.length; i++ ) {
+         html += 
+         `<th>
+            ${def[i]['text'] 
+            <i>${def[i]['pos']}</i>
+          </th>`;
+        } 
+        html += `
+      </tr>
+      <tr>`;
+      for (i = 0; i < def.length; i++ ) {
+        html +=`
+        <td>`;
+        if (def[i]['tr']) {
+          for (j = 0; j < def[i]['tr'].length; j++) {
+            html += `
+            <p>def[i]['tr'][j]['text']</p>`;
+          }
+        }
+        html += `
+        </td>
+      <tr>`;
+      } 
+        
+      
+      
+      html += '</table>';
+      
+      return html;
+  }
+  function result2Sentence(result) {
+    return `<p>result</p>`;
+  }
+  function reloadResultBlock() {
+    
+  }
+  return {
+    addStyles: function() {
+      
+    },
+    showWidget: function() {
+      
+    },
+    hideWidget: function() {
+      
+    },
+    selectTemplate: function(template) {
+      switch (template) { 
+      case 'table': builderResultBlock =  result2Table;
+        break;
+      case 'string': builderResultBlock =  result2Sentence;
+        break;
+      }
+    },
+    reloadResultBlock: reloadResultBlock,
+  }
+})();
+var controller = (function() {
+  return {
+    translate: function(params) {
+      
+    }
+  }
+})();
+var mediator = {
+  
+}
+</script>
