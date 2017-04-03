@@ -345,7 +345,9 @@ var view = (function() {
         border: 2px solid;
        /* border-radius:10px;
         padding: 20px 15px 1px 15px;*/
-        position: absolute;
+        position: fixed;
+        top : 0px;
+        right : 0px;
         z-index: 1000;
         background-color: white;
       }
@@ -357,28 +359,13 @@ var view = (function() {
         opacity : 1;
       }
       .Header{
-        width : 100%;
-        height : 20px;
-        background : blue;
+        padding: 5px;
+        height: 25px;
       }
       .WorkSpace{
         margin : 20px 15px 1px 15px;
       }
-      .HideButton{
-        height : 20px;
-        width : 20px;
-        top: 0px;
-        right: 0px;
-        position: absolute;
-        /*text-align : center;
-        line-height : 20px;*/
-        
-        /*top: -5px;
-        right: -5px;
-        border-radius : 50%;*/
-        /*padding : 0px;
-        overflow : visible;*/
-      }
+     
       .LabelBlock{
         margin: 0px;
         font : caption;
@@ -462,14 +449,73 @@ var view = (function() {
         /*box-sizing' : border-box;*/
         width : auto;
       }
+       /*кнопки-стрелки*/
+      .arrowDown, .arrowUp {
+        height: 6px;
+        width: 64px;
+      }
+   
+      .arrowDown, .arrowUp {
+          background-color: #e5e5e5;
+          margin-left: auto;
+          margin-right: auto;
+          position: relative;
+      }
+      .arrowUp {
+          bottom: -18px;
+      }
+      .arrowDown {
+          top: 3px;
+      }
+      .arrowUp:before {
+          border-bottom: 16px solid #e5e5e5;
+          bottom: 6px;
+      }
+      .arrowDown:before {
+          border-top: 16px solid #e5e5e5;
+          top: 6px;
+      }
+      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {
+          border-left: 32px solid rgba(229,229,229,0);
+          border-right: 32px solid rgba(229,229,229,0);
+      }
+      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {
+          content: ' ';
+          height: 0;
+          left: 0;
+          position: absolute;
+          width: 0;
+      }
+
+      .arrowUp:after {
+          border-bottom: 16px solid #fff;
+      }
+      .arrowUp:after {
+          bottom: 0;
+      }
+      .arrowDown:after {
+          border-top: 16px solid #fff;
+      }
+      .arrowDown:after {
+          top: 0;
+      }
+      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {
+          border-left: 32px solid rgba(229,229,229,0);
+          border-right: 32px solid rgba(229,229,229,0);
+      }
+      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {
+          content: ' ';
+          height: 0;
+          left: 0;
+          position: absolute;
+          width: 0;
+      }   
     }  
     `;
  
   function createWidget() {
     var content = `
-      <div class='Header'>
-        <button class='HideButton'>X</button>
-      </div>
+      
       <div class='WorkSpace'>
         <div class='ResultBlock'>
           <h3 class='HelpText'>Выделите текст мышкой или воспользуйтесь формой</h3>
@@ -503,9 +549,28 @@ var view = (function() {
         <div class='LabelBlock'>
         </div>
       </div>
+      <div class='Header'>
+        <div class='HideWidget arrowUp'>
+        </div>
+      </div>
       `;
+      //`class='${namespace}`);
+      
     //Добавление префикса
-    content = content.replace(/class\s*=\s*'/g, `class='${namespace}`);
+    content = content.replace(/class\s*=\s*(['"])([^'"]*)/g,
+      function(classAttr, typedQuotes, classList) {
+        
+        classList = classList.trim();
+        classArray = classList.split(' ');
+        classList = '';
+        classArray = classArray.map(function(className) {
+          return namespace + className.trim();
+        });
+        classList = classArray.join(' ');
+        console.log(classList)
+        return `class=${typedQuotes}${classList}${typedQuotes}`;
+      }
+    );
     
     widget = document.createElement('div');
     widget.className = `${namespace}DivTranslate`;
@@ -552,7 +617,8 @@ var view = (function() {
         }
       }
     );
-    addListener(getByClass('HideButton'), 'click', hideWidget);
+    addListener(getByClass('HideWidget'), 'click', hideWidget);
+   // addListener(getByClass('showWidget'), 'click', showWidget);
     addListener(getByClass('ShowCtrl'), 'click', function(){
         getByClass('Controller').style.display = 'none';
       }
@@ -590,7 +656,7 @@ var view = (function() {
               <th>
                 ${resultTranslate[i].formOfWord} 
                 </br>
-                <span class="PartOfSpeach">
+                <span class="${namespace}PartOfSpeach">
                   ${resultTranslate[i].partOfSpeach}
                 </span>
               </th>`;
@@ -605,7 +671,7 @@ var view = (function() {
         
     html = 
       `
-      <div class="TranslateElement">
+      <div class="${namespace}TranslateElement">
         <table>
           <thead>
             <tr>` + headContent +
@@ -634,7 +700,9 @@ var view = (function() {
     widget.style.display = 'block';
   }
   function hideWidget() {
-    widget.style.display = 'none';
+    getByClass('WorkSpace').style.display = 'none';
+    getByClass('HideWidget').className = `${namespace}HideWidget ${namespace}arrowDown`;
+    
   }
   function addStyles() {
    
