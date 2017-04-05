@@ -1,4 +1,4 @@
-(function() {
+var mediator, assign, APILib, courier, view; 
 function ErrorRequest() {
   Error.call(this) ;
   this.name = 'ErrorRequest';
@@ -49,7 +49,7 @@ var assign = (function() {
 
 var APILib = (function() {
   
-  var API, yandexDictionary, yandexInterpreter;
+  var yandexDictionary, yandexInterpreter;
   
   
   
@@ -234,7 +234,7 @@ var courier = (function() {
 
 
 var mediator = (function() {
-  var API; //информация об API будет использоваться часто
+  var API; //одно из APILib
   
   function start() {
     //инициализация букмарклета(добавление HTML, стилей, обработчиков событий)
@@ -244,9 +244,9 @@ var mediator = (function() {
     var result;
     assign.setText(text);
     if ( assign.isOneWord() ) {
-      API = APILib.selectAPI('YD'); //YD - yandexDictionary
+      API = APILib.selectAPI('YD'); //YD - yandexDictionary - словарь, много вариантов перевода
     } else {
-      API = APILib.selectAPI('YI') //YI - yandexInterpreter
+      API = APILib.selectAPI('YI') //YI - yandexInterpreter - переводчик, 1 вариант перевода
     }
     if ( result = API.findInCache( assign.toString() ) ) {
       //console.dir( assign.toString() );
@@ -333,15 +333,18 @@ var view = (function() {
   label, //информация обязательная к показу по условиям использования API
   namespace = 'bmk',//Префикс, автоматически добавляется к именам классов в HTML и CSS
   styles = 
-    `
+    ` /*Сброс стилей страницы внутри виджета букмарклета*/
+      
       .DivTranslate{
         font-family: sans-serif;
         -webkit-font-smoothing: antialiased;
         /*font: status-bar;*/
         box-shadow:1px 1px 10px 1px rgb(238, 238, 238);;
+        max-width: 70%;
+        max-height: 70%;
         width : auto;
         box-sizing : border-box;
-        overflow: visible;
+        overflow: auto;
         border: 2px solid;
        /* border-radius:10px;
         padding: 20px 15px 1px 15px;*/
@@ -351,6 +354,12 @@ var view = (function() {
         z-index: 1000;
         background-color: white;
       }
+      .Open{
+        display: block;
+      }
+      .Close{
+        display: none;
+      }
       ::selection{
         background: #ADFF2F;
       }
@@ -359,7 +368,6 @@ var view = (function() {
         opacity : 1;
       }
       .Header{
-        padding: 5px;
         height: 25px;
       }
       .WorkSpace{
@@ -457,15 +465,19 @@ var view = (function() {
    
       .arrowDown, .arrowUp {
           background-color: #e5e5e5;
-          margin-left: auto;
-          margin-right: auto;
+         
           position: relative;
       }
       .arrowUp {
           bottom: -18px;
+          margin-left: auto;
+          margin-right: auto;
+          margin-down: 2px;
+         /* transform: rotate(45deg);*/
       }
       .arrowDown {
-          top: 3px;
+          top: 2px;
+          margin: 2px;
       }
       .arrowUp:before {
           border-bottom: 16px solid #e5e5e5;
@@ -520,8 +532,6 @@ var view = (function() {
         <div class='ResultBlock'>
           <h3 class='HelpText'>Выделите текст мышкой или воспользуйтесь формой</h3>
         </div>
-        <hr>
-        <button class='ShowCtrl'>open</button>
         <form class='Controller'>
        
           <table><tr>
@@ -550,25 +560,25 @@ var view = (function() {
         </div>
       </div>
       <div class='Header'>
-        <div class='HideWidget arrowUp'>
+        <div class='toggleButton arrowUp'>
         </div>
       </div>
       `;
       //`class='${namespace}`);
       
     //Добавление префикса
-    content = content.replace(/class\s*=\s*(['"])([^'"]*)/g,
-      function(classAttr, typedQuotes, classList) {
+    content = content.replace(/class\s*=\s*(['"])([^'"]*)/g, //как установить закрывающую кавыку соответсвующую откр.?
+      function(classAttr, typedQuote, classList) {
         
         classList = classList.trim();
         classArray = classList.split(' ');
-        classList = '';
+       // classList = '';
         classArray = classArray.map(function(className) {
           return namespace + className.trim();
         });
         classList = classArray.join(' ');
-        console.log(classList)
-        return `class=${typedQuotes}${classList}${typedQuotes}`;
+        //console.log(classList)
+        return `class=${typedQuote}${classList}${typedQuote}`;
       }
     );
     
@@ -586,6 +596,7 @@ var view = (function() {
     showWidget();
   } 
   function addListener(DOMElement, eventType, callback) {
+   
     DOMElement.addEventListener(eventType, callback);
   }
   /*eventCallbacks = {
@@ -617,12 +628,9 @@ var view = (function() {
         }
       }
     );
-    addListener(getByClass('HideWidget'), 'click', hideWidget);
+    addListener(getByClass('toggleButton'), 'click', toggleWidget);
    // addListener(getByClass('showWidget'), 'click', showWidget);
-    addListener(getByClass('ShowCtrl'), 'click', function(){
-        getByClass('Controller').style.display = 'none';
-      }
-    );
+    
     addListener(getByClass('FormButton'), 'click', function(e){
         e.preventDefault();
         var text = getByClass('FormInput').value;
@@ -649,10 +657,10 @@ var view = (function() {
   }
   function result2Table(resultTranslate) {
 
-    var html = headContent = bodyContent = '';
+    var html = tHeadContent = tBodyContent = '';
     (function() {
       for(var i = 0; i < resultTranslate.length; i++) {
-        headContent += `  
+        tHeadContent += `  
               <th>
                 ${resultTranslate[i].formOfWord} 
                 </br>
@@ -661,11 +669,11 @@ var view = (function() {
                 </span>
               </th>`;
         arr = resultTranslate[i].variants;
-        bodyContent += `<td><ul>`;
+        tBodyContent += `<td><ul>`;
         for(var j = 0; j < arr.length; j++) {
-          bodyContent += `<li>${arr[j]}</li>`;
+          tBodyContent += `<li>${arr[j]}</li>`;
         }
-        bodyContent += `</ul></td>`;
+        tBodyContent += `</ul></td>`;
       }
     })();
         
@@ -674,12 +682,12 @@ var view = (function() {
       <div class="${namespace}TranslateElement">
         <table>
           <thead>
-            <tr>` + headContent +
+            <tr>` + tHeadContent +
             `
             </tr>
           </thead>
           <tbody>
-            <tr>` + bodyContent +
+            <tr>` + tBodyContent +
             `
             </tr>
           </tbody>
@@ -691,31 +699,63 @@ var view = (function() {
   function result2Sentence(result) {
     return `<table><tr><td>${result}</td></tr></table>`;
   }
-  function getByClass(className) {
-    //console.log(`.${namespace}${className}`)
-    className = className.trim();
-    return widget.querySelector(`.${namespace}${className}`);
+  function getByClass(classString) {
+    var result;
+    classString = classString.trim();
+    classString = `.${namespace}${classString}`; // Добавление префикса к первому классу
+    classString = classString.replace(/\s+/g, ' .'+namespace);//Добавление префиксов к остальных классам, если они есть
+    result = widget.querySelector(classString)
+    if (result instanceof Node) {
+      return widget.querySelector(classString);
+    } else {
+      var err = new Error(`результат поиска ${classString} - не DOM-элемент`);
+      mediator.errorDetected(err);
+    }
   }
   function showWidget() {
-    widget.style.display = 'block';
+    widget.classList.remove(`${namespace}Close`);
+    widget.classList.add(`${namespace}Open`);
+    getByClass('WorkSpace').classList.add(`${namespace}Open`);
+  }
+  function toggleWidget() {
+    var workSpace = getByClass('WorkSpace');
+    var toggleButton = getByClass('toggleButton');
+    if (workSpace.classList.contains(`${namespace}Open`) ) {
+      workSpace.classList.remove(`${namespace}Open`);
+      workSpace.classList.add(`${namespace}Close`);
+      toggleButton.classList.remove(`${namespace}arrowUp`);
+      toggleButton.classList.add(`${namespace}arrowDown`);
+    } else {
+      workSpace.classList.remove(`${namespace}Close`);
+      workSpace.classList.add(`${namespace}Open`);
+      toggleButton.classList.remove(`${namespace}arrowDown`);
+      toggleButton.classList.add(`${namespace}arrowUp`);
+    }
   }
   function hideWidget() {
-    getByClass('WorkSpace').style.display = 'none';
-    getByClass('HideWidget').className = `${namespace}HideWidget ${namespace}arrowDown`;
+    widget.classList.remove(`${namespace}Open`);
+    widget.classList.add(`${namespace}Close`);
+    //getByClass('WorkSpace').style.display = 'none';
+    //getByClass('toggleButton').className = `${namespace}toggleButton ${namespace}arrowDown`;
     
   }
   function addStyles() {
    
     var styleTag = document.createElement('style');
-    styles = styles.replace(/;/g, ' !important;');
+    //styles = styles.replace(/;/g, ' !important;');
+    //styles = styles.replace(/{/g, '{'+resetCSS);
     styles = styles.replace(/\s*\./g, `.${namespace}`);/////////////////////////////////////////////////////////////////////////
     // console.dir(styles);
     styleTag.textContent = styles;
     document.body.appendChild(styleTag);
   }
+  function close() {
+    widget.parentNode.removeChild(widget);
+  }
   return {
-    init : init,
-    showWidget : showWidget,
+    init: init,
+    close: close,
+    showWidget: showWidget,
     /*showResult : function(result) {
       reloadResultBlock(result);
       reloadLabelBlock(label);
@@ -729,10 +769,9 @@ var view = (function() {
         break;
       }
     },
-    reloadResultBlock : reloadResultBlock,
-    reloadLabelBlock : reloadLabelBlock
+    reloadResultBlock: reloadResultBlock,
+    reloadLabelBlock: reloadLabelBlock
   }
 })();
 
 mediator.start();
-})()
