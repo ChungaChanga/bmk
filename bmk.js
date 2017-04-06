@@ -321,7 +321,286 @@ var mediator = (function() {
 
 
 var view = (function() {
+  var HTML, CSS, eventHandler,
+  namespace = 'bmk';//Префикс, автоматически добавляется к именам классов в HTML и CSS
+  
+  HTML = (function() {
+    var widget, //HTMLElement - корневой элемент букмарклета
+      resultBlock, //HTMLElement - контейнер для результата перевода
+      labelBlock, //HTMLElement - контейнер для label
+      builderResultBlock, // функция преобразования рез-та в HTML
+      body = document.body,
+      label, //информация обязательная к показу по условиям использования API
+      widgetInnerHTML = '';//строка - HTML собержимое виджета
+      
+    widgetInnerHTML = `
+    <div class='WorkSpace'>
+      <div class='ResultBlock'>
+        <h3 class='HelpText'>Выделите текст мышкой или воспользуйтесь формой</h3>
+      </div>
+      <form class='Controller'>
+     
+        <table><tr>
+            <td colspan='2'>
+              <fieldset>
+              <legend>Направление перевода:</legend>
+                <select class='FormSelectLang'>
+                  <option selected='' value='en-ru'>Английский - Русский</option>
+                  <option value='ru-en'>Русский - Английский</option>
+                </select>
+              </fieldset>
+            </td>
+          </tr>
+          <tr>
+          <td>
+            <textarea class='FormInput' placeholder='Перевести'></textarea>
+          </td>
+          <td>
+            <button class='FormButton'>→</button>
+            <!--input type='button' class='FormButton' value='→'></input-->
+          </td>
+        </tr></table>
+        
+      </form>
+      <div class='LabelBlock'>
+      </div>
+    </div>
+    <div class='Header'>
+      <div class='toggleButton arrowUp'>
+      </div>
+    </div>
+    `;
+    function getByClass(classString) {
+    var result;
+    classString = classString.trim();
+    classString = `.${namespace}${classString}`; // Добавление префикса к первому классу
+    classString = classString.replace(/\s+/g, ' .'+namespace);//Добавление префиксов к остальных классам, если они есть
+    result = document.querySelector(classString)
+    if (result instanceof Node) {
+      return result;
+    } else {
+      var err = new Error(`результат поиска ${classString} - не DOM-элемент`);
+      mediator.errorDetected(err);
+    }
+  }
+  
+  function createWidget() {
+   // console.log(5)
+    widget = document.createElement('div');
+    widget.className = `${namespace}DivTranslate`;
+    widget.innerHTML = widgetInnerHTML;
+    resultBlock = getByClass('ResultBlock');
+    labelBlock = getByClass('LabelBlock');
+    body.appendChild(content);
+    //console.log(widget)
+  }
+      
+  })();
+  
+  CSS = (function() {
+    var styles = 
+    ` /*Сброс стилей страницы внутри виджета букмарклета*/
+      .DivTranslate{
+        all: initial;
+      }
+      .DivTranslate{
+        
+        font-family: sans-serif;
+        -webkit-font-smoothing: antialiased;
+        /*font: status-bar;*/
+        box-shadow:1px 1px 10px 1px rgb(238, 238, 238);;
+        max-width: 70%;
+        max-height: 70%;
+        width : auto;
+        box-sizing : border-box;
+        overflow: auto;
+        border: 2px solid;
+       /* border-radius:10px;
+        padding: 20px 15px 1px 15px;*/
+        position: fixed;
+        top : 0px;
+        right : 0px;
+        z-index: 1000;
+        background-color: white;
+      }
+      .Open{
+        display: block;
+      }
+      .Close{
+        display: none;
+      }
+      ::selection{
+        background: #ADFF2F;
+      }
+        
+      .DivTranslate:hover{
+        opacity : 1;
+      }
+      .Header{
+        height: 25px;
+      }
+      .WorkSpace{
+        margin : 20px 15px 1px 15px;
+      }
+     
+      .LabelBlock{
+        margin: 0px;
+        font : caption;
+        text-align : center;
+      }
+      .ResultBlock table {
+        display: block;
+        font-size: 100%;
+        overflow: auto;
+        width: auto;
+        text-align: center;
+        margin : auto;
+        display : inline-block;
+      }
+      .ResultBlock th,.HelpText{
+        background-color: rgb(238, 238, 238);
+        color: rgb(111, 111, 111);
+        font-weight: normal;
+        padding: 5px 10px;
 
+      }
+      .ResultBlock td {
+        padding: 5px 10px;
+        vertical-align : top;
+      }
+      .ResultBlock ul {
+        padding : 0px;
+      }
+      .ResultBlock li {
+        margin : 3px;
+        list-style : none;
+      }
+      .PartOfSpeach{
+        font-style: oblique;
+      }
+      .PartOfSpeach::before{
+        content : "(";
+      }
+      .PartOfSpeach::after{
+        content : ")";
+      }
+      .Controller{
+        margin : auto;
+        width: auto;
+        height: auto;
+        margin-top: 15px;
+       
+      }
+      .Controller table{
+        /*display : inline-block;
+        margin: 0px;
+        padding: 0px;
+        box-sizing : border-box;*/
+        border-spacing: 8px;
+        width : 100%;
+       
+
+      }
+      .Controller td{
+        text-align : center;
+      }
+      .Controller textarea{
+        width : 100%;
+        margin : auto;
+        position : relative;
+        top : 2px;
+        box-sizing : border-box;
+        //'border' : '0',
+        //'background' : '#ADFF2F'
+      }
+      
+      .Controller button{
+        width : 100%;
+        height : 100%;
+      }
+      .Controller select{
+       font-size : 100%;
+      }
+      .ResultBlock{
+        text-align : center;
+        /*box-sizing' : border-box;*/
+        width : auto;
+      }
+       /*кнопки-стрелки*/
+      .arrowDown, .arrowUp {
+        height: 6px;
+        width: 64px;
+      }
+   
+      .arrowDown, .arrowUp {
+          background-color: #e5e5e5;
+         
+          position: relative;
+      }
+      .arrowUp {
+          bottom: -18px;
+          margin-left: auto;
+          margin-right: auto;
+          margin-down: 2px;
+         /* transform: rotate(45deg);*/
+      }
+      .arrowDown {
+          top: 2px;
+          margin: 2px;
+      }
+      .arrowUp:before {
+          border-bottom: 16px solid #e5e5e5;
+          bottom: 6px;
+      }
+      .arrowDown:before {
+          border-top: 16px solid #e5e5e5;
+          top: 6px;
+      }
+      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {
+          border-left: 32px solid rgba(229,229,229,0);
+          border-right: 32px solid rgba(229,229,229,0);
+      }
+      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {
+          content: ' ';
+          height: 0;
+          left: 0;
+          position: absolute;
+          width: 0;
+      }
+
+      .arrowUp:after {
+          border-bottom: 16px solid #fff;
+      }
+      .arrowUp:after {
+          bottom: 0;
+      }
+      .arrowDown:after {
+          border-top: 16px solid #fff;
+      }
+      .arrowDown:after {
+          top: 0;
+      }
+      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {
+          border-left: 32px solid rgba(229,229,229,0);
+          border-right: 32px solid rgba(229,229,229,0);
+      }
+      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {
+          content: ' ';
+          height: 0;
+          left: 0;
+          position: absolute;
+          width: 0;
+      }   
+    }  
+    `,
+  })();
+  
+  eventHandler = (function() {
+    
+  })();
+  
+  
+  
   var widget, //HTMLElement - корневой элемент букмарклета
   resultBlock, //HTMLElement - контейнер для результата перевода
   labelBlock, //HTMLElement - контейнер для label
@@ -574,20 +853,22 @@ var view = (function() {
       mediator.errorDetected(err);
     }
   }
-  function addNamespace() {
+  function addNamespace() {///////////////////////////////////////////////////////////////
     /*Добавление префикса к именам классов в HTML*/
     widgetInnerHTML = widgetInnerHTML.replace(/class\s*=\s*(['"])([^'"]*)/g, //как установить закрывающую кавыку соответсвующую откр.?
       function(classAttr, typedQuote, classList) {
         
         classList = classList.trim();
-        classArray = classList.split(' ');
+        classList = classList.replace(/\s+/, ' ' + namespace);
+        return `class=${typedQuote}${classList}${typedQuote}`;
+       /* classArray = classList.split(' ');
        // classList = '';
         classArray = classArray.map(function(className) {
           return namespace + className.trim();
         });
         classList = classArray.join(' ');
         //console.log(classList)
-        return `class=${typedQuote}${classList}${typedQuote}`;
+        return `class=${typedQuote}${classList}${typedQuote}`;*/
       }
     );
     /*Добавление префикса к именам классов в CSS*/
