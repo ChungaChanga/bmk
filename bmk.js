@@ -178,9 +178,6 @@ var APILib = (function() {
 })();
   
 var courier = (function() {
-  
-  
-
   function request(path, key, params) {
     var xhr, url;
     //url = generateUrl(path, key, params);
@@ -300,7 +297,7 @@ var mediator = (function() {
     }
   }
   function stop() { //отключение букмарклета
-    
+    view.stop();
   }
   
   return {
@@ -526,11 +523,8 @@ var view = (function() {
           width: 0;
       }   
     }  
-    `;
- 
-  function createWidget() {
-    var content = `
-      
+    `,
+    widgetInnerHTML = `
       <div class='WorkSpace'>
         <div class='ResultBlock'>
           <h3 class='HelpText'>Выделите текст мышкой или воспользуйтесь формой</h3>
@@ -567,10 +561,22 @@ var view = (function() {
         </div>
       </div>
       `;
-      //`class='${namespace}`);
-      
-    //Добавление префикса
-    content = content.replace(/class\s*=\s*(['"])([^'"]*)/g, //как установить закрывающую кавыку соответсвующую откр.?
+  function getByClass(classString) {
+    var result;
+    classString = classString.trim();
+    classString = `.${namespace}${classString}`; // Добавление префикса к первому классу
+    classString = classString.replace(/\s+/g, ' .'+namespace);//Добавление префиксов к остальных классам, если они есть
+    result = document.querySelector(classString)
+    if (result instanceof Node) {
+      return result;
+    } else {
+      var err = new Error(`результат поиска ${classString} - не DOM-элемент`);
+      mediator.errorDetected(err);
+    }
+  }
+  function addNamespace() {
+    /*Добавление префикса к именам классов в HTML*/
+    widgetInnerHTML = widgetInnerHTML.replace(/class\s*=\s*(['"])([^'"]*)/g, //как установить закрывающую кавыку соответсвующую откр.?
       function(classAttr, typedQuote, classList) {
         
         classList = classList.trim();
@@ -584,13 +590,18 @@ var view = (function() {
         return `class=${typedQuote}${classList}${typedQuote}`;
       }
     );
-    
+    /*Добавление префикса к именам классов в CSS*/
+     styles = styles.replace(/\s*\./g, `.${namespace}`);/////////////////////////
+  }
+  function createWidget() {
+   // console.log(5)
     widget = document.createElement('div');
     widget.className = `${namespace}DivTranslate`;
-    widget.innerHTML = content;
+    widget.innerHTML = widgetInnerHTML;
     resultBlock = getByClass('ResultBlock');
     labelBlock = getByClass('LabelBlock');
-    body.appendChild(widget);
+    body.appendChild(content);
+    //console.log(widget)
   }
   function init() {
     createWidget();
@@ -598,55 +609,135 @@ var view = (function() {
     addListeners();
     showWidget();
   } 
-  function addListener(DOMElement, eventType, callback) {
-   
-    DOMElement.addEventListener(eventType, callback);
+  function EventHandler() {
+    this.listeners = [
+      { /* Получение выделенного текста*/
+        DOMElement: body, 
+        eventType: 'mouseup',
+        callback: function(e){
+          /*событие не распространяется на содержимое самого виджета
+          (выделенный текст не будет автоматически переведен)*/
+          if (widget.contains(e.target)) {
+            return;
+          }
+          var selectedText = window.getSelection().toString();
+          if(selectedText){ //если какой-то текст выделен пользователем
+            mediator.gotAssign( selectedText );
+          }
+        }
+      },
+      {
+        DOMElement: body,
+        eventType: 'mousedown',
+        callback: function(event){
+          if( window.getSelection().toString() && (event.which === 1) ){ //
+            window.getSelection().removeAllRanges();
+          }
+        }
+      },
+      {
+        DOMElement: getByClass('toggleButton'),
+        eventType: 'click',
+        callback: toggleWidget
+      },
+      {
+        DOMElement: getByClass('FormButton'),
+        eventType: 'click',
+        callback: function(e){
+          e.preventDefault();
+          var text = getByClass('FormInput').value;
+          //console.log(text);
+          mediator.gotAssign(text);
+        }
+      },
+      {
+        DOMElement: getByClass('FormSelectLang'),
+        eventType: 'click',
+        callback: function(event){
+          //////////////////////////////////////
+          assign.setLang(event.target.value);
+        }
+      }
+    ];
   }
-  /*eventCallbacks = {
-    selectedText : ,
-    clearSelection : ,
-    textareaText :
+  eventHandler = (function() {
     
-  }*/
-
-  function addListeners() {
-   /* Получение выделенного текста*/
-    addListener(body, 'mouseup', function(e){
-        /*событие не распространяется на содержимое самого виджета
-        (выделенный текст не будет автоматически переведен)*/
-        if (widget.contains(e.target)) {
-          return;
+    function addListener(DOMElement, eventType, callback) {
+      if (!(DOMElement instanceof Node) ) {
+        var err = new Error(DOMElement + 'не DOM-элемент');
+        mediator.errorDetected(err);
+      }
+      DOMElement.addEventListener(eventType, callback);
+    }
+    function removeListener(DOMElement, eventType, callback) {
+      if (!(DOMElement instanceof Node) ) {
+        var err = new Error(DOMElement + 'не DOM-элемент');
+        mediator.errorDetected(err);
+      }
+      DOMElement.removeEventListener(eventType, callback);
+    }
+    function addListeners() {
+      listeners = 
+      { /* Получение выделенного текста*/
+        DOMElement: body, 
+        eventType: 'mouseup',
+        callback: function(e){
+          /*событие не распространяется на содержимое самого виджета
+          (выделенный текст не будет автоматически переведен)*/
+          if (widget.contains(e.target)) {
+            return;
+          }
+          var selectedText = window.getSelection().toString();
+          if(selectedText){ //если какой-то текст выделен пользователем
+            mediator.gotAssign( selectedText );
+          }
         }
-        var selectedText = window.getSelection().toString();
-        if(selectedText){ //если какой-то текст выделен пользователем
-          //self.event = event;
-         // cl(selectedText);
-          mediator.gotAssign( selectedText );
+      },
+      {
+        DOMElement: body,
+        eventType: 'mousedown',
+        callback: function(event){
+          if( window.getSelection().toString() && (event.which === 1) ){ //
+            window.getSelection().removeAllRanges();
+          }
+        }
+      },
+      {
+        DOMElement: getByClass('toggleButton'),
+        eventType: 'click',
+        callback: toggleWidget
+      },
+      {
+        DOMElement: getByClass('FormButton'),
+        eventType: 'click',
+        callback: function(e){
+          e.preventDefault();
+          var text = getByClass('FormInput').value;
+          //console.log(text);
+          mediator.gotAssign(text);
+        }
+      },
+      {
+        DOMElement: getByClass('FormSelectLang'),
+        eventType: 'click',
+        callback: function(event){
+          //////////////////////////////////////
+          assign.setLang(event.target.value);
         }
       }
-    );
-    addListener(body, 'mousedown', function(event){
-        if( window.getSelection().toString() && (event.which === 1) ){ //
-          window.getSelection().removeAllRanges();
+    ];
+      listeners.foreach( function(listener) {
+          addListener(listener.DOMElement, listener.eventType, listener.callback);
         }
-      }
-    );
-    addListener(getByClass('toggleButton'), 'click', toggleWidget);
-   // addListener(getByClass('showWidget'), 'click', showWidget);
-    
-    addListener(getByClass('FormButton'), 'click', function(e){
-        e.preventDefault();
-        var text = getByClass('FormInput').value;
-        //console.log(text);
-        mediator.gotAssign(text);
-      }
-    );
-    addListener(getByClass('FormSelectLang'), 'click', function(event){
-        //////////////////////////////////////
-        assign.setLang(event.target.value);
-      }
-    );
-  }
+      );
+    }
+    function removeListeners() {
+      listeners.foreach( function(listener) {
+          removeListener(listener.DOMElement, listener.eventType, listener.callback);
+        }
+      );
+    }
+  })()
   
   function reloadResultBlock(/*string HTML*/ result) {
     
@@ -702,19 +793,6 @@ var view = (function() {
   function result2Sentence(result) {
     return `<table><tr><td>${result}</td></tr></table>`;
   }
-  function getByClass(classString) {
-    var result;
-    classString = classString.trim();
-    classString = `.${namespace}${classString}`; // Добавление префикса к первому классу
-    classString = classString.replace(/\s+/g, ' .'+namespace);//Добавление префиксов к остальных классам, если они есть
-    result = widget.querySelector(classString)
-    if (result instanceof Node) {
-      return widget.querySelector(classString);
-    } else {
-      var err = new Error(`результат поиска ${classString} - не DOM-элемент`);
-      mediator.errorDetected(err);
-    }
-  }
   function showWidget() {
     widget.classList.remove(`${namespace}Close`);
     widget.classList.add(`${namespace}Open`);
@@ -747,12 +825,13 @@ var view = (function() {
     var styleTag = document.createElement('style');
     //styles = styles.replace(/;/g, ' !important;');
     //styles = styles.replace(/{/g, '{'+resetCSS);
-    styles = styles.replace(/\s*\./g, `.${namespace}`);/////////////////////////////////////////////////////////////////////////
+   
     // console.dir(styles);
     styleTag.textContent = styles;
     document.body.appendChild(styleTag);
   }
-  function close() {
+  function stop() {
+    removeListeners();
     widget.parentNode.removeChild(widget);
   }
   return {
