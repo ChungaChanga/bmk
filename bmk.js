@@ -334,8 +334,11 @@ var view = (function() {
   namespace = 'bmk',//Префикс, автоматически добавляется к именам классов в HTML и CSS
   styles = 
     ` /*Сброс стилей страницы внутри виджета букмарклета*/
-      
       .DivTranslate{
+        all: initial;
+      }
+      .DivTranslate{
+        
         font-family: sans-serif;
         -webkit-font-smoothing: antialiased;
         /*font: status-bar;*/
