@@ -273,7 +273,7 @@ var mediator = (function() {
     view.reloadResultBlock( result );
     //console.dir(API.getLabel());
     view.reloadLabelBlock( API.getLabel() );
-    view.showWidget();
+    //view.showWidget();
     API.addToCache(assign.toString(), result);
     //console.dir(API.getCache());
     //console.dir(API.getCache());
@@ -322,11 +322,16 @@ var mediator = (function() {
 
 var view = (function() {
   var HTML, CSS, eventHandler,
-  prefix = 'bmk',//Префикс, автоматически добавляется к именам классов в HTML и CSS
-  body = document.body;
+  prefix = 'bmk';/*Префикс, автоматически добавляется к именам классов в HTML и CSS
+                  перед добавлением виджета на страницу*/
+  
   function append(element) {
     document.body.appendChild(element);
   }
+  function remove(element) {
+    element.parentNode.removeChild(element);
+  }
+  
   function getByClassWithPrefix(prefix, classString) {
       var result;
       classString = classString.trim();
@@ -339,13 +344,13 @@ var view = (function() {
         var err = new Error(`результат поиска ${classString} - не DOM-элемент`);
         mediator.errorDetected(err);
       }
-    }
+  }
   HTML = (function() {
     var widget, //HTMLElement - корневой элемент букмарклета
       resultBlock, //HTMLElement - контейнер для результата перевода
       labelBlock, //HTMLElement - контейнер для label(информация обязательная к показу по условиям использования API)
       builderResultBlock, // функция преобразования рез-та в HTML
-      widgetInnerHTML = '';//строка - HTML собержимое виджета
+      widgetInnerHTML = '';//строка - HTML содержимое виджета
       
     widgetInnerHTML = `
     <div class='WorkSpace'>
@@ -452,20 +457,30 @@ var view = (function() {
     
     /*Добавление префикса к именам классов в HTML*/
     function addPrefixes(prefix) {
-      function addPrefix2ClassList(prefix, classList){
-        var i, length = classList.length;
-        for (i = 0; i < length, i++) {
-          classList[i] = prefix + classList[i];
-        }
-        return classList;
-      }
       // добавление префикса к классам кореневого элемента
       widget.classList = addPrefix2ClassList(prefix, widget.classList);
+      //console.log(widget.classList);
       // добавление префикса к классам Содержимого кореневого элемента
       var widgetDescendants = widget.getElementsByTagName('*');
-      for (var i = 0, i < content.length, i++) {
-        widgetDescendants.classList = addPrefix2ClassList(prefix, classList);
+      //console.log(widgetDescendants[4].classList);
+      for (var i = 0; i < widgetDescendants.length; i++) {
+        if (widgetDescendants[i].classList.length > 0) {
+          widgetDescendants[i].classList =
+          addPrefix2ClassList(prefix, widgetDescendants[i].classList);
+        }
       }
+    }
+    function addPrefix2ClassList(prefix, classList){
+      var i,classNameWithPrefix, length = classList.length;
+      
+      for (i = 0; i < length; i++) {
+        classNameWithPrefix = prefix + classList[i];
+        classList.remove(classList[i]);
+        classList.add(classNameWithPrefix);
+        //console.log(classList);
+      }
+      //console.log(classList);
+      return classList;
     }
     
     return {
@@ -475,14 +490,22 @@ var view = (function() {
         }
         return widget;
       },
-      reloadResultBlock: HTML.reloadResultBlock,
-      reloadLabelBlock: HTML.reloadLabelBlock,
+      selectTemplate: function(template) {
+        switch (template) { 
+        case 'table': builderResultBlock = result2Table;
+          break;
+        case 'string': builderResultBlock = result2Sentence;
+          break;
+        }
+      },
+      reloadResultBlock: reloadResultBlock,
+      reloadLabelBlock: reloadLabelBlock,
       addPrefixes: addPrefixes,
-      createWidget: createWidget
+      createWidget: createWidget,
     }
   })();
   CSS = (function() {
-    var styleTag, styles = 
+    var styleTag, styleTagContent= 
     ` /*Сброс стилей страницы внутри виджета букмарклета*/
       .DivTranslate{
         all: initial;
@@ -682,11 +705,11 @@ var view = (function() {
         return;
       }
       styleTag = document.createElement('style');
-      //styles = styles.replace(/;/g, ' !important;');
-      //styles = styles.replace(/{/g, '{'+resetCSS);
+      //styleTagContent = styleTagContent.replace(/;/g, ' !important;');
+      //styleTagContent = styleTagContent.replace(/{/g, '{'+resetCSS);
      
-      // console.dir(styles);
-      styleTag.textContent = styles;
+      // console.dir(styleTagContent);
+      styleTag.textContent = styleTagContent;
     }
     function getStyleTag() {
        if (!styleTag) {
@@ -698,7 +721,7 @@ var view = (function() {
     /*Добавление префикса к именам классов в CSS*/
      
       getStyleTag().textContent = getStyleTag().textContent.replace(/\s*\./g, `.${prefix}`);
-      // styles = styles.replace(/\s*\./g, `.${prefix}`);/////////////////////////
+      // styleTagContent = styleTagContent.replace(/\s*\./g, `.${prefix}`);/////////////////////////
     }
     return {
       addPrefixes: addPrefixes,
@@ -723,7 +746,7 @@ var view = (function() {
       - это нужно учитывать и в Функциях обратного вызова,
       функция getByClassWithPrefix поможет получить нужный элемент с учетом префиксов*/
         { /* Получение выделенного текста*/
-          DOMElement: body, 
+          DOMElement: document.body, 
           eventType: 'mouseup',
           callback: function(e){
             /*событие не распространяется на содержимое самого виджета
@@ -738,7 +761,7 @@ var view = (function() {
           }
         },
         {
-          DOMElement: body,
+          DOMElement: document.body,
           eventType: 'mousedown',
           callback: function(event){
             if( window.getSelection().toString() && (event.which === 1) ){ //
@@ -822,21 +845,24 @@ var view = (function() {
     }
     
     function addListeners() {
-      createListenersDescription();
-      listeners.foreach( function(listener) {
+      //console.log(listeners);
+      listeners.forEach( function(listener) {
           addListener(listener.DOMElement, listener.eventType, listener.callback);
         }
       );
     }
     function removeListeners() {
-      listeners.foreach( function(listener) {
+      listeners.forEach( function(listener) {
           removeListener(listener.DOMElement, listener.eventType, listener.callback);
         }
       );
     }
     return {
-      addListeners: addListeners,
-      removeListeners: removeListeners
+      run: function() {
+        createListenersDescription();
+        addListeners();
+      },
+      stop: removeListeners
     }
   })()
   
@@ -864,33 +890,22 @@ var view = (function() {
     append(CSS.getStyleTag());
     eventHandler.run();
   }
-
-  }
   function stop() {
     eventHandler.stop();
     remove(HTML.getWidget());
   }
   return {
     init: init,
-    close: close,
-    showWidget: showWidget,
+    stop: stop,
+   // showWidget: showWidget,
     /*showResult : function(result) {
       reloadResultBlock(result);
       reloadLabelBlock(label);
       showWidget();
     },*/
-    selectTemplate: function(template) {
-      switch (template) { 
-      case 'table': builderResultBlock =  result2Table;
-        break;
-      case 'string': builderResultBlock =  result2Sentence;
-        break;
-      }
-    },
-    reloadWidget: function() {
-      HTML.reloadResultBlock();
-      HTML.reloadLabelBlock();
-    }
+    selectTemplate: HTML.selectTemplate,
+    reloadResultBlock: HTML.reloadResultBlock,
+    reloadLabelBlock: HTML.reloadLabelBlock
    /* reloadResultBlock: HTML.reloadResultBlock,
     reloadLabelBlock: HTML.reloadLabelBlock*/
   }
