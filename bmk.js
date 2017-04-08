@@ -332,11 +332,15 @@ var view = (function() {
     element.parentNode.removeChild(element);
   }
   
-  function getByClassWithPrefix(prefix, classString) {
+  function getByClassWithPrefix(classString, pfx) {
+    if (!pfx) {
+      var pfx = prefix;
+    }
+    //console.log(classString)
       var result;
       classString = classString.trim();
-      classString = `.${prefix}${classString}`; // Добавление префикса к первому классу
-      classString = classString.replace(/\s+/g, ' .'+prefix);//Добавление префиксов к остальных классам, если они есть
+      classString = `.${pfx}${classString}`; // Добавление префикса к первому классу
+      classString = classString.replace(/\s+/g, ' .'+pfx);//Добавление префиксов к остальных классам, если они есть
       result = document.querySelector(classString)
       if (result instanceof Node) {
         return result;
@@ -458,29 +462,23 @@ var view = (function() {
     /*Добавление префикса к именам классов в HTML*/
     function addPrefixes(prefix) {
       // добавление префикса к классам кореневого элемента
-      widget.classList = addPrefix2ClassList(prefix, widget.classList);
+      widget.className= addPrefixes2Classes(prefix, widget.className);
       //console.log(widget.classList);
       // добавление префикса к классам Содержимого кореневого элемента
       var widgetDescendants = widget.getElementsByTagName('*');
       //console.log(widgetDescendants[4].classList);
       for (var i = 0; i < widgetDescendants.length; i++) {
         if (widgetDescendants[i].classList.length > 0) {
-          widgetDescendants[i].classList =
-          addPrefix2ClassList(prefix, widgetDescendants[i].classList);
+          widgetDescendants[i].className =
+          addPrefixes2Classes(prefix, widgetDescendants[i].className);
         }
       }
     }
-    function addPrefix2ClassList(prefix, classList){
-      var i,classNameWithPrefix, length = classList.length;
-      
-      for (i = 0; i < length; i++) {
-        classNameWithPrefix = prefix + classList[i];
-        classList.remove(classList[i]);
-        classList.add(classNameWithPrefix);
-        //console.log(classList);
-      }
-      //console.log(classList);
-      return classList;
+    function addPrefixes2Classes(prefix, className){
+      className = className.trim();
+      className = `${prefix}${className}`; // Добавление префикса к первому классу
+      className = className.replace(/\s+/g, ' '+prefix);
+      return className;
     }
     
     return {
@@ -770,22 +768,22 @@ var view = (function() {
           }
         },
         {
-          DOMElement: widget.getElementsByClassName('toggleButton')[0],
+          DOMElement: getByClassWithPrefix('toggleButton', prefix),
           eventType: 'click',
           callback: toggleWidget
         },
         {
-          DOMElement: widget.getElementsByClassName('FormButton')[0],
+          DOMElement: getByClassWithPrefix('FormButton', prefix),
           eventType: 'click',
           callback: function(e){
             e.preventDefault();
-            var text = getByClassWithPrefix(prefix, 'FormInput').value;
+            var text = getByClassWithPrefix('FormInput', prefix).value;
             //console.log(text);
             mediator.gotAssign(text);
           }
         },
         {
-          DOMElement: widget.getElementsByClassName('FormSelectLang')[0],
+          DOMElement: getByClassWithPrefix('FormSelectLang', prefix),
           eventType: 'click',
           callback: function(event){
             //////////////////////////////////////
@@ -803,11 +801,11 @@ var view = (function() {
     function showWidget() {
       widget.classList.remove(`${prefix}Close`);
       widget.classList.add(`${prefix}Open`);
-      getByClassWithPrefix(prefix, 'WorkSpace').classList.add(`${prefix}Open`);
+      getByClassWithPrefix('WorkSpace', prefix).classList.add(`${prefix}Open`);
     }
     function toggleWidget() {
-      var workSpace = getByClassWithPrefix(prefix, 'WorkSpace');
-      var toggleButton = getByClassWithPrefix(prefix, 'toggleButton');
+      var workSpace = getByClassWithPrefix('WorkSpace', prefix);
+      var toggleButton = getByClassWithPrefix('toggleButton', prefix);
       if (workSpace.classList.contains(`${prefix}Open`) ) {
         workSpace.classList.remove(`${prefix}Open`);
         workSpace.classList.add(`${prefix}Close`);
@@ -867,20 +865,7 @@ var view = (function() {
   })()
   
   
-  /*
   
-    var result;
-    classString = classString.trim();
-    classString = `.${prefix}${classString}`; // Добавление префикса к первому классу
-    classString = classString.replace(/\s+/g, ' .'+prefix);//Добавление префиксов к остальных классам, если они есть
-    result = document.querySelector(classString)
-    if (result instanceof Node) {
-      return result;
-    } else {
-      var err = new Error(`результат поиска ${classString} - не DOM-элемент`);
-      mediator.errorDetected(err);
-    }
-  */
   function init() {
     HTML.createWidget();
     CSS.createStyleTag();
@@ -897,17 +882,9 @@ var view = (function() {
   return {
     init: init,
     stop: stop,
-   // showWidget: showWidget,
-    /*showResult : function(result) {
-      reloadResultBlock(result);
-      reloadLabelBlock(label);
-      showWidget();
-    },*/
     selectTemplate: HTML.selectTemplate,
     reloadResultBlock: HTML.reloadResultBlock,
     reloadLabelBlock: HTML.reloadLabelBlock
-   /* reloadResultBlock: HTML.reloadResultBlock,
-    reloadLabelBlock: HTML.reloadLabelBlock*/
   }
 })();
 
