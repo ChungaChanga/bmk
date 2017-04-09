@@ -71,8 +71,8 @@ var APILib = (function() {
         413 : ['Превышен максимальный размер текста.',true],
         501 : ['Заданное направление перевода не поддерживается.']
     },
-    label : `«Реализовано с помощью сервиса 
-      <a href='https://tech.yandex.ru/dictionary/'>«Яндекс.Словарь»</a>`,
+    label : '«Реализовано с помощью сервиса' +
+      '<a href=\'https://tech.yandex.ru/dictionary/\'>«Яндекс.Словарь»</a>',
     reformateResponse : function(responseObject) {
       responseObject = JSON.parse(responseObject);
       var def,result = [];
@@ -110,8 +110,8 @@ var APILib = (function() {
         422 : ['Текст не может быть переведен.'],
         501 : ['Заданное направление перевода не поддерживается.']
     },
-    label : `«Переведено сервисом 
-    <a href="http://translate.yandex.ru/">«Яндекс.Переводчик»</a>`,
+    label : '«Переведено сервисом' + 
+    '<a href=\'http://translate.yandex.ru/\'>«Яндекс.Переводчик»</a>',
     reformateResponse : function(responseObject) {
       responseObject = JSON.parse(responseObject);
       //console.dir(responseObject.text[0])
@@ -339,13 +339,13 @@ var view = (function() {
     //console.log(className)
     var result;
     className = className.trim();
-    className = `.${pfx}${className}`; // Добавление префикса к первому классу
+    className = '.' + pfx + className; // Добавление префикса к первому классу
     className = className.replace(/\s+/g, ' .'+pfx);//Добавление префиксов к остальных классам, если они есть
     result = document.querySelector(className)
     if (result instanceof Node) {
       return result;
     } else {
-      var err = new Error(`результат поиска ${className} - не DOM-элемент`);
+      var err = new Error('результат поиска ' + className +' - не DOM-элемент');
       mediator.errorDetected(err);
     }
   }
@@ -356,43 +356,42 @@ var view = (function() {
       builderResultBlock, // функция преобразования рез-та в HTML
       widgetInnerHTML = '';//строка - HTML содержимое виджета
       
-    widgetInnerHTML = `
-    <div class='WorkSpace'>
-      <div class='ResultBlock'>
-        <h3 class='HelpText'>Выделите текст мышкой или воспользуйтесь формой</h3>
-      </div>
-      <form class='Controller'>
+    widgetInnerHTML = 
+    '<div class=\'WorkSpace\'>' +
+      '<div class=\'ResultBlock\'>' +
+        '<h3 class=\'HelpText\'>Выделите текст мышкой или воспользуйтесь формой</h3>' +
+      '</div>' +
+      '<form class=\'Controller\'>' +
      
-        <table><tr>
-            <td colspan='2'>
-              <fieldset>
-              <legend>Направление перевода:</legend>
-                <select class='FormSelectLang'>
-                  <option selected='' value='en-ru'>Английский - Русский</option>
-                  <option value='ru-en'>Русский - Английский</option>
-                </select>
-              </fieldset>
-            </td>
-          </tr>
-          <tr>
-          <td>
-            <textarea class='FormInput' placeholder='Перевести'></textarea>
-          </td>
-          <td>
-            <button class='FormButton'>→</button>
-            <!--input type='button' class='FormButton' value='→'></input-->
-          </td>
-        </tr></table>
+        '<table><tr>' +
+            '<td colspan=\'2\'>' +
+              '<fieldset>' +
+              '<legend>Направление перевода:</legend>' +
+                '<select class=\'FormSelectLang\'>' +
+                  '<option selected=\'\' value=\'en-ru\'>Английский - Русский</option>' +
+                  '<option value=\'ru-en\'>Русский - Английский</option>' +
+                '</select>' +
+              '</fieldset>' +
+            '</td>' +
+          '</tr>' +
+          '<tr>' +
+          '<td>' +
+            '<textarea class=\'FormInput\' placeholder=\'Перевести\'></textarea>' +
+          '</td>' +
+          '<td>' +
+            '<button class=\'FormButton\'>→</button>' +
+            '<!--input type=\'button\' class=\'FormButton\' value=\'→\'></input-->' +
+          '</td>' +
+        '</tr></table>' +
         
-      </form>
-      <div class='LabelBlock'>
-      </div>
-    </div>
-    <div class='Header'>
-      <div class='toggleButton arrowUp'>
-      </div>
-    </div>
-    `;
+      '</form>' +
+      '<div class=\'LabelBlock\'>' +
+      '</div>' +
+    '</div>' +
+    '<div class=\'Header\'>' +
+      '<div class=\'toggleButton arrowUp\'>' +
+      '</div>' +
+    '</div>' ;
 
     function createWidget() {
      // console.log(5)
@@ -412,7 +411,7 @@ var view = (function() {
     }
     function reloadLabelBlock(/*string HTML*/ label) {
      
-      labelBlock.innerHTML = `<p>${label}</p>`;
+      labelBlock.innerHTML = '<p>' + label + '</p>';
     }
     function result2Table(resultTranslate,pfx) {
       if (!pfx) {
@@ -421,40 +420,36 @@ var view = (function() {
       var html = tHeadContent = tBodyContent = '';
       (function() {
         for(var i = 0; i < resultTranslate.length; i++) {
-          tHeadContent += `  
-                <th>
-                  ${resultTranslate[i].formOfWord} 
-                  </br>
-                  <span class="${prefix}PartOfSpeach">
-                    ${resultTranslate[i].partOfSpeach}
-                  </span>
-                </th>`;
+          tHeadContent +=   
+                '<th>' +
+                  resultTranslate[i].formOfWord +
+                  '</br>' +
+                  '<span class=' +pfx + 'PartOfSpeach>' +
+                    resultTranslate[i].partOfSpeach +
+                  '</span>' +
+                '</th>';
           arr = resultTranslate[i].variants;
-          tBodyContent += `<td><ul>`;
+          tBodyContent += '<td><ul>';
           for(var j = 0; j < arr.length; j++) {
-            tBodyContent += `<li>${arr[j]}</li>`;
+            tBodyContent += '<li>' +arr[j] + '</li>';
           }
-          tBodyContent += `</ul></td>`;
+          tBodyContent += '</ul></td>';
         }
       })();
           
-      html = 
-        `
-        <div>
-          <table>
-            <thead>
-              <tr>` + tHeadContent +
-              `
-              </tr>
-            </thead>
-            <tbody>
-              <tr>` + tBodyContent +
-              `
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        `;
+      html =
+        '<div>' +
+          '<table>' +
+            '<thead>' +
+              '<tr>' + tHeadContent +
+              '</tr>' +
+            '</thead>' +
+            '<tbody>' +
+              '<tr>' + tBodyContent +
+              '</tr>' +
+            '</tbody>' +
+          '</table>' +
+        '</div>';
       return html;
     }
     
@@ -483,7 +478,7 @@ var view = (function() {
       return html;
     }
     function result2Sentence(result) {
-      return `<table><tr><td>${result}</td></tr></table>`;
+      return '<table><tr><td>' + result + '</td></tr></table>';
     }
     
     /*Добавление префикса к именам классов в HTML*/
@@ -503,7 +498,7 @@ var view = (function() {
     }
     function addPrefixes2Classes(prefix, className){
       className = className.trim();
-      className = `${prefix}${className}`; // Добавление префикса к первому классу
+      className = prefix + className; // Добавление префикса к первому классу
       className = className.replace(/\s+/g, ' '+prefix);
       return className;
     }
@@ -533,206 +528,203 @@ var view = (function() {
   })();
   CSS = (function() {
     var styleTag, styleTagContent= 
-    ` /*Сброс стилей страницы внутри виджета букмарклета*/
-      .DivTranslate{
-        all: initial;
-      }
-      .DivTranslate{
-        
-        font-family: sans-serif;
-        -webkit-font-smoothing: antialiased;
-        /*font: status-bar;*/
-        box-shadow:1px 1px 10px 1px rgb(238, 238, 238);;
-        max-width: 70%;
-        max-height: 70%;
-        width : auto;
-        box-sizing : border-box;
-        overflow: auto;
-        border: 2px solid;
-       /* border-radius:10px;
-        padding: 20px 15px 1px 15px;*/
-        position: fixed;
-        top : 0px;
-        right : 0px;
-        z-index: 1000;
-        background-color: white;
-      }
-      .Open{
-        display: block;
-      }
-      .Close{
-        display: none;
-      }
-      ::selection{
-        background: #ADFF2F;
-      }
-        
-      .DivTranslate:hover{
-        opacity : 1;
-      }
-      .Header{
-        height: 25px;
-      }
-      .WorkSpace{
-        margin : 20px 15px 1px 15px;
-      }
-     
-      .LabelBlock{
-        margin: 0px;
-        font : caption;
-        text-align : center;
-      }
-      .ResultBlock table {
-        display: block;
-        font-size: 100%;
-        overflow: auto;
-        width: auto;
-        text-align: center;
-        margin : auto;
-        display : inline-block;
-      }
-      .ResultBlock th,.HelpText{
-        background-color: rgb(238, 238, 238);
-        color: rgb(111, 111, 111);
-        font-weight: normal;
-        padding: 5px 10px;
-
-      }
-      .ResultBlock td {
-        padding: 5px 10px;
-        vertical-align : top;
-      }
-      .ResultBlock ul {
-        padding : 0px;
-      }
-      .ResultBlock li {
-        margin : 3px;
-        list-style : none;
-      }
-      .ResultBlock dt {
-        display: inline-block;
-       }
-      .ResultBlock dd {
-       
-       }
-      
-      .PartOfSpeach{
-        font-style: oblique;
-      }
-      .PartOfSpeach::before{
-        content : "(";
-      }
-      .PartOfSpeach::after{
-        content : ")";
-      }
-      .Controller{
-        margin : auto;
-        width: auto;
-        height: auto;
-        margin-top: 15px;
-       
-      }
-      .Controller table{
-        /*display : inline-block;
-        margin: 0px;
-        padding: 0px;
-        box-sizing : border-box;*/
-        border-spacing: 8px;
-        width : 100%;
-       
-
-      }
-      .Controller td{
-        text-align : center;
-      }
-      .Controller textarea{
-        width : 100%;
-        margin : auto;
-        position : relative;
-        top : 2px;
-        box-sizing : border-box;
-        //'border' : '0',
-        //'background' : '#ADFF2F'
-      }
-      
-      .Controller button{
-        width : 100%;
-        height : 100%;
-      }
-      .Controller select{
-       font-size : 100%;
-      }
-      .ResultBlock{
-        text-align : center;
-        /*box-sizing' : border-box;*/
-        width : auto;
-      }
-       /*кнопки-стрелки*/
-      .arrowDown, .arrowUp {
-        height: 6px;
-        width: 64px;
-      }
-   
-      .arrowDown, .arrowUp {
-          background-color: #e5e5e5;
-         
-          position: relative;
-      }
-      .arrowUp {
-          bottom: -18px;
-          margin-left: auto;
-          margin-right: auto;
-          margin-down: 2px;
-         /* transform: rotate(45deg);*/
-      }
-      .arrowDown {
-          top: 2px;
-          margin: 2px;
-      }
-      .arrowUp:before {
-          border-bottom: 16px solid #e5e5e5;
-          bottom: 6px;
-      }
-      .arrowDown:before {
-          border-top: 16px solid #e5e5e5;
-          top: 6px;
-      }
-      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {
-          border-left: 32px solid rgba(229,229,229,0);
-          border-right: 32px solid rgba(229,229,229,0);
-      }
-      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {
-          content: ' ';
-          height: 0;
-          left: 0;
-          position: absolute;
-          width: 0;
-      }
-
-      .arrowUp:after {
-          border-bottom: 16px solid #fff;
-      }
-      .arrowUp:after {
-          bottom: 0;
-      }
-      .arrowDown:after {
-          border-top: 16px solid #fff;
-      }
-      .arrowDown:after {
-          top: 0;
-      }
-      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {
-          border-left: 32px solid rgba(229,229,229,0);
-          border-right: 32px solid rgba(229,229,229,0);
-      }
-      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {
-          content: ' ';
-          height: 0;
-          left: 0;
-          position: absolute;
-          width: 0;
-      }  
-    `;
+   /*Сброс стилей страницы внутри виджета букмарклета*/
+      '.DivTranslate{\
+        all: initial;\
+      }\
+      .DivTranslate{\
+        \
+        font-family: sans-serif;\
+        -webkit-font-smoothing: antialiased;\
+        /*font: status-bar;*/\
+        box-shadow:1px 1px 10px 1px rgb(238, 238, 238);;\
+        max-width: 70%;\
+        max-height: 70%;\
+        width : auto;\
+        box-sizing : border-box;\
+        overflow: auto;\
+        border: 2px solid;\
+       /* border-radius:10px;\
+        padding: 20px 15px 1px 15px;*/\
+        position: fixed;\
+        top : 0px;\
+        right : 0px;\
+        z-index: 1000;\
+        background-color: white;\
+      }\
+      .Open{\
+        display: block;\
+      }\
+      .Close{\
+        display: none;\
+      }\
+      ::selection{\
+        background: #ADFF2F;\
+      }\
+        \
+      .DivTranslate:hover{\
+        opacity : 1;\
+      }\
+      .Header{\
+        height: 25px;\
+      }\
+      .WorkSpace{\
+        margin : 20px 15px 1px 15px;\
+      }\
+     \
+      .LabelBlock{\
+        margin: 0px;\
+        font : caption;\
+        text-align : center;\
+      }\
+      .ResultBlock table {\
+        display: block;\
+        font-size: 100%;\
+        overflow: auto;\
+        width: auto;\
+        text-align: center;\
+        margin : auto;\
+        display : inline-block;\
+      }\
+      .ResultBlock th,.HelpText{\
+        background-color: rgb(238, 238, 238);\
+        color: rgb(111, 111, 111);\
+        font-weight: normal;\
+        padding: 5px 10px;\
+\
+      }\
+      .ResultBlock td {\
+        padding: 5px 10px;\
+        vertical-align : top;\
+      }\
+      .ResultBlock ul {\
+        padding : 0px;\
+      }\
+      .ResultBlock li {\
+        margin : 3px;\
+        list-style : none;\
+      }\
+      .ResultBlock dt {\
+        display: inline-block;\
+       }\
+      .ResultBlock dd {\
+       \
+       }\
+      \
+      .PartOfSpeach{\
+        font-style: oblique;\
+      }\
+      .PartOfSpeach::before{\
+        content : "(";\
+      }\
+      .PartOfSpeach::after{\
+        content : ")";\
+      }\
+      .Controller{\
+        margin : auto;\
+        width: auto;\
+        height: auto;\
+        margin-top: 15px;\
+       \
+      }\
+      .Controller table{\
+        /*display : inline-block;\
+        margin: 0px;\
+        padding: 0px;\
+        box-sizing : border-box;*/\
+        border-spacing: 8px;\
+        width : 100%;\
+       \
+\
+      }\
+      .Controller td{\
+        text-align : center;\
+      }\
+      .Controller textarea{\
+        width : 100%;\
+        margin : auto;\
+        position : relative;\
+        top : 2px;\
+        box-sizing : border-box;\
+      }\
+      \
+      .Controller button{\
+        width : 100%;\
+        height : 100%;\
+      }\
+      .Controller select{\
+       font-size : 100%;\
+      }\
+      .ResultBlock{\
+        text-align : center;\
+        /*box-sizing : border-box;*/\
+        width : auto;\
+      }\
+       /*кнопки-стрелки*/\
+      .arrowDown, .arrowUp {\
+        height: 6px;\
+        width: 64px;\
+      }\
+   \
+      .arrowDown, .arrowUp {\
+          background-color: #e5e5e5;\
+         \
+          position: relative;\
+      }\
+      .arrowUp {\
+          bottom: -18px;\
+          margin-left: auto;\
+          margin-right: auto;\
+          margin-down: 2px;\
+         /* transform: rotate(45deg);*/\
+      }\
+      .arrowDown {\
+          top: 2px;\
+          margin: 2px;\
+      }\
+      .arrowUp:before {\
+          border-bottom: 16px solid #e5e5e5;\
+          bottom: 6px;\
+      }\
+      .arrowDown:before {\
+          border-top: 16px solid #e5e5e5;\
+          top: 6px;\
+      }\
+      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {\
+          border-left: 32px solid rgba(229,229,229,0);\
+          border-right: 32px solid rgba(229,229,229,0);\
+      }\
+      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {\
+          content: " ";\
+          height: 0;\
+          left: 0;\
+          position: absolute;\
+          width: 0;\
+      }\
+\
+      .arrowUp:after {\
+          border-bottom: 16px solid #fff;\
+      }\
+      .arrowUp:after {\
+          bottom: 0;\
+      }\
+      .arrowDown:after {\
+          border-top: 16px solid #fff;\
+      }\
+      .arrowDown:after {\
+          top: 0;\
+      }\
+      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {\
+          border-left: 32px solid rgba(229,229,229,0);\
+          border-right: 32px solid rgba(229,229,229,0);\
+      }\
+      .arrowDown:after, .arrowDown:before, .arrowUp:after, .arrowUp:before {\
+          content: " ";\
+          height: 0;\
+          left: 0;\
+          position: absolute;\
+          width: 0;\
+      }';
     function createStyleTag() {
       if (styleTag instanceof Node) {
         mediator.errorDetected(new Error('styleTag уже существует') );
@@ -754,7 +746,7 @@ var view = (function() {
     function addPrefixes(prefix) {
     /*Добавление префикса к именам классов в CSS*/
      
-      getStyleTag().textContent = getStyleTag().textContent.replace(/\s*\./g, `.${prefix}`);
+      getStyleTag().textContent = getStyleTag().textContent.replace(/\s*\./g, '.' + prefix);
       // styleTagContent = styleTagContent.replace(/\s*\./g, `.${prefix}`);/////////////////////////
     }
     return {
@@ -837,28 +829,28 @@ var view = (function() {
       widget.parentNode.removeChild(widget);
     }
     function showWidget() {
-      widget.classList.remove(`${prefix}Close`);
-      widget.classList.add(`${prefix}Open`);
-      getByClassWithPrefix('WorkSpace', prefix).classList.add(`${prefix}Open`);
+      widget.classList.remove(prefix + 'Close');
+      widget.classList.add(prefix + 'Open');
+      getByClassWithPrefix('WorkSpace', prefix).classList.add(prefix + 'Open');
     }
     function toggleWidget() {
       var workSpace = getByClassWithPrefix('WorkSpace', prefix);
       var toggleButton = getByClassWithPrefix('toggleButton', prefix);
-      if (workSpace.classList.contains(`${prefix}Open`) ) {
-        workSpace.classList.remove(`${prefix}Open`);
-        workSpace.classList.add(`${prefix}Close`);
-        toggleButton.classList.remove(`${prefix}arrowUp`);
-        toggleButton.classList.add(`${prefix}arrowDown`);
+      if (workSpace.classList.contains(prefix + 'Open') ) {
+        workSpace.classList.remove(prefix + 'Open');
+        workSpace.classList.add(prefix + 'Close');
+        toggleButton.classList.remove(prefix + 'arrowUp');
+        toggleButton.classList.add(prefix + 'arrowDown');
       } else {
-        workSpace.classList.remove(`${prefix}Close`);
-        workSpace.classList.add(`${prefix}Open`);
-        toggleButton.classList.remove(`${prefix}arrowDown`);
-        toggleButton.classList.add(`${prefix}arrowUp`);
+        workSpace.classList.remove(prefix + 'Close');
+        workSpace.classList.add(prefix + 'Open');
+        toggleButton.classList.remove(prefix + 'arrowDown');
+        toggleButton.classList.add(prefix + 'arrowUp');
       }
     }
     function hideWidget() {
-      widget.classList.remove(`${prefix}Open`);
-      widget.classList.add(`${prefix}Close`);
+      widget.classList.remove(prefix + 'Open');
+      widget.classList.add(prefix + 'Close');
       //getByClassWithPrefix(prefix, 'WorkSpace').style.display = 'none';
       //getByClassWithPrefix(prefix, 'toggleButton').className = `${prefix}toggleButton ${prefix}arrowDown`;
       
