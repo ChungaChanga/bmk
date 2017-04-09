@@ -2,7 +2,7 @@ var mediator, assign, APILib, courier, view;
 function ErrorRequest() {
   Error.call(this) ;
   this.name = 'ErrorRequest';
-  this.message = "Ошибка обращения к API ";
+  this.message = 'Ошибка обращения к API ';
 
   if (Error.captureStackTrace) {
     Error.captureStackTrace(this, ErrorRequest);
@@ -72,7 +72,7 @@ var APILib = (function() {
         501 : ['Заданное направление перевода не поддерживается.']
     },
     label : `«Реализовано с помощью сервиса 
-      <a href="https://tech.yandex.ru/dictionary/">«Яндекс.Словарь»</a>`,
+      <a href='https://tech.yandex.ru/dictionary/'>«Яндекс.Словарь»</a>`,
     reformateResponse : function(responseObject) {
       responseObject = JSON.parse(responseObject);
       var def,result = [];
@@ -332,22 +332,22 @@ var view = (function() {
     element.parentNode.removeChild(element);
   }
   
-  function getByClassWithPrefix(classString, pfx) {
+  function getByClassWithPrefix(className, pfx) {
     if (!pfx) {
       var pfx = prefix;
     }
-    //console.log(classString)
-      var result;
-      classString = classString.trim();
-      classString = `.${pfx}${classString}`; // Добавление префикса к первому классу
-      classString = classString.replace(/\s+/g, ' .'+pfx);//Добавление префиксов к остальных классам, если они есть
-      result = document.querySelector(classString)
-      if (result instanceof Node) {
-        return result;
-      } else {
-        var err = new Error(`результат поиска ${classString} - не DOM-элемент`);
-        mediator.errorDetected(err);
-      }
+    //console.log(className)
+    var result;
+    className = className.trim();
+    className = `.${pfx}${className}`; // Добавление префикса к первому классу
+    className = className.replace(/\s+/g, ' .'+pfx);//Добавление префиксов к остальных классам, если они есть
+    result = document.querySelector(className)
+    if (result instanceof Node) {
+      return result;
+    } else {
+      var err = new Error(`результат поиска ${className} - не DOM-элемент`);
+      mediator.errorDetected(err);
+    }
   }
   HTML = (function() {
     var widget, //HTMLElement - корневой элемент букмарклета
@@ -414,8 +414,10 @@ var view = (function() {
      
       labelBlock.innerHTML = `<p>${label}</p>`;
     }
-    function result2Table(resultTranslate) {
-
+    function result2Table(resultTranslate,pfx) {
+      if (!pfx) {
+        pfx = prefix;
+      }
       var html = tHeadContent = tBodyContent = '';
       (function() {
         for(var i = 0; i < resultTranslate.length; i++) {
@@ -438,7 +440,7 @@ var view = (function() {
           
       html = 
         `
-        <div class="${prefix}TranslateElement">
+        <div>
           <table>
             <thead>
               <tr>` + tHeadContent +
@@ -455,6 +457,31 @@ var view = (function() {
         `;
       return html;
     }
+    
+    function result2List(resultTranslate) {
+
+      var html = dl = '';
+      (function() {
+        dl = '<dl>';
+        for(var i = 0; i < resultTranslate.length; i++) {
+          
+          dl += `  
+                <dt>
+                  ${resultTranslate[i].formOfWord}
+                  <span class="${prefix}PartOfSpeach">
+                    ${resultTranslate[i].partOfSpeach}
+                  </span>
+                </dt>`;
+          var arr = resultTranslate[i].variants;
+          for(var j = 0; j < arr.length; j++) {
+            dl += `<dd>${arr[j]}</dd>`;
+          }
+        }
+        dl += '</dl>';
+      })();   
+      html = dl;
+      return html;
+    }
     function result2Sentence(result) {
       return `<table><tr><td>${result}</td></tr></table>`;
     }
@@ -462,7 +489,7 @@ var view = (function() {
     /*Добавление префикса к именам классов в HTML*/
     function addPrefixes(prefix) {
       // добавление префикса к классам кореневого элемента
-      widget.className= addPrefixes2Classes(prefix, widget.className);
+      widget.className = addPrefixes2Classes(prefix, widget.className);
       //console.log(widget.classList);
       // добавление префикса к классам Содержимого кореневого элемента
       var widgetDescendants = widget.getElementsByTagName('*');
@@ -493,6 +520,8 @@ var view = (function() {
         case 'table': builderResultBlock = result2Table;
           break;
         case 'string': builderResultBlock = result2Sentence;
+          break;
+        case 'list': builderResultBlock = result2List;
           break;
         }
       },
@@ -580,6 +609,13 @@ var view = (function() {
         margin : 3px;
         list-style : none;
       }
+      .ResultBlock dt {
+        display: inline-block;
+       }
+      .ResultBlock dd {
+       
+       }
+      
       .PartOfSpeach{
         font-style: oblique;
       }
@@ -727,7 +763,6 @@ var view = (function() {
       getStyleTag: getStyleTag
     }
   })();
-  
   eventHandler = (function() {
     var widget = HTML.getWidget(),
     listeners = [];
@@ -749,6 +784,9 @@ var view = (function() {
           callback: function(e){
             /*событие не распространяется на содержимое самого виджета
             (выделенный текст не будет автоматически переведен)*/
+            //console.log(widget);
+            //console.log(e.target);
+            //console.log(widget.contains(e.target));
             if (widget.contains(e.target)) {
               return;
             }
