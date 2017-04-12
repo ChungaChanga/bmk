@@ -16,7 +16,7 @@ var assign = (function() {
   var text = '',
   lang = 'en-ru', // направление перевода
   ui = 'ru',
-  flags = 0x000d;
+  flags = 0x000c;
   function getParams() {
     return {
       text : text,
@@ -365,13 +365,12 @@ var view = (function() {
      
         '<table><tr>' +
             '<td colspan=\'2\'>' +
-              '<fieldset>' +
-              '<legend>Направление перевода:</legend>' +
+              'Направление перевода:' +
                 '<select class=\'FormSelectLang\'>' +
                   '<option selected=\'\' value=\'en-ru\'>Английский - Русский</option>' +
                   '<option value=\'ru-en\'>Русский - Английский</option>' +
+                  '<option selected=\'\' value=\'ru-ru\'>Русский - Русский</option>' +
                 '</select>' +
-              '</fieldset>' +
             '</td>' +
           '</tr>' +
           '<tr>' +
@@ -538,11 +537,11 @@ var view = (function() {
         -webkit-font-smoothing: antialiased;\
         /*font: status-bar;*/\
         box-shadow:1px 1px 10px 1px rgb(238, 238, 238);;\
-        max-width: 70%;\
-        max-height: 70%;\
+       /* max-width: 70%;\
+        max-height: 70%;*/\
         width : auto;\
         box-sizing : border-box;\
-        overflow: auto;\
+        /*overflow: auto;*/\
         border: 2px solid;\
        /* border-radius:10px;\
         padding: 20px 15px 1px 15px;*/\
@@ -576,6 +575,10 @@ var view = (function() {
         margin: 0px;\
         font : caption;\
         text-align : center;\
+      }\
+      .ResultBlock{\
+        max-height: 400px;\
+        overflow: auto;\
       }\
       .ResultBlock table {\
         display: block;\
@@ -619,6 +622,9 @@ var view = (function() {
       }\
       .PartOfSpeach::after{\
         content : ")";\
+      }\
+      .Controller fieldset{\
+        border: 1px solid grey;\
       }\
       .Controller{\
         margin : auto;\
