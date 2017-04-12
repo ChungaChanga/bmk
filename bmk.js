@@ -361,28 +361,16 @@ var view = (function() {
       '<div class=\'ResultBlock\'>' +
         '<h3 class=\'HelpText\'>Выделите текст мышкой или воспользуйтесь формой</h3>' +
       '</div>' +
-      '<form class=\'Controller\'>' +
-     
-        '<table><tr>' +
-            '<td colspan=\'2\'>' +
+      '<form class=\'form-inline\' role=\'form\'>' +
               'Направление перевода:' +
                 '<select class=\'FormSelectLang\'>' +
                   '<option selected=\'\' value=\'en-ru\'>Английский - Русский</option>' +
                   '<option value=\'ru-en\'>Русский - Английский</option>' +
                   '<option selected=\'\' value=\'ru-ru\'>Русский - Русский</option>' +
                 '</select>' +
-            '</td>' +
-          '</tr>' +
-          '<tr>' +
-          '<td>' +
             '<textarea class=\'FormInput\' placeholder=\'Перевести\'></textarea>' +
-          '</td>' +
-          '<td>' +
             '<button class=\'FormButton\'>→</button>' +
             '<!--input type=\'button\' class=\'FormButton\' value=\'→\'></input-->' +
-          '</td>' +
-        '</tr></table>' +
-        
       '</form>' +
       '<div class=\'LabelBlock\'>' +
       '</div>' +
@@ -395,7 +383,7 @@ var view = (function() {
     function createWidget() {
      // console.log(5)
       widget = document.createElement('div');
-      widget.className = 'DivTranslate';
+      widget.className = 'DivTranslate container-fluid';
       widget.innerHTML = widgetInnerHTML;
       resultBlock = widget.getElementsByClassName('ResultBlock')[0];
       labelBlock = widget.getElementsByClassName('LabelBlock')[0];
@@ -528,146 +516,8 @@ var view = (function() {
   CSS = (function() {
     var styleTag, styleTagContent= 
    /*Сброс стилей страницы внутри виджета букмарклета*/
-      '.DivTranslate{\
-        all: initial;\
-      }\
-      .DivTranslate{\
-        \
-        font-family: sans-serif;\
-        -webkit-font-smoothing: antialiased;\
-        /*font: status-bar;*/\
-        box-shadow:1px 1px 10px 1px rgb(238, 238, 238);;\
-       /* max-width: 70%;\
-        max-height: 70%;*/\
-        width : auto;\
-        box-sizing : border-box;\
-        /*overflow: auto;*/\
-        border: 2px solid;\
-       /* border-radius:10px;\
-        padding: 20px 15px 1px 15px;*/\
-        position: fixed;\
-        top : 0px;\
-        right : 0px;\
-        z-index: 1000;\
-        background-color: white;\
-      }\
-      .Open{\
-        display: block;\
-      }\
-      .Close{\
-        display: none;\
-      }\
-      ::selection{\
-        background: #ADFF2F;\
-      }\
-        \
-      .DivTranslate:hover{\
-        opacity : 1;\
-      }\
-      .Header{\
-        height: 25px;\
-      }\
-      .WorkSpace{\
-        margin : 20px 15px 1px 15px;\
-      }\
-     \
-      .LabelBlock{\
-        margin: 0px;\
-        font : caption;\
-        text-align : center;\
-      }\
-      .ResultBlock{\
-        max-height: 400px;\
-        overflow: auto;\
-      }\
-      .ResultBlock table {\
-        display: block;\
-        font-size: 100%;\
-        overflow: auto;\
-        width: auto;\
-        text-align: center;\
-        margin : auto;\
-        display : inline-block;\
-      }\
-      .ResultBlock th,.HelpText{\
-        background-color: rgb(238, 238, 238);\
-        color: rgb(111, 111, 111);\
-        font-weight: normal;\
-        padding: 5px 10px;\
-\
-      }\
-      .ResultBlock td {\
-        padding: 5px 10px;\
-        vertical-align : top;\
-      }\
-      .ResultBlock ul {\
-        padding : 0px;\
-      }\
-      .ResultBlock li {\
-        margin : 3px;\
-        list-style : none;\
-      }\
-      .ResultBlock dt {\
-        display: inline-block;\
-       }\
-      .ResultBlock dd {\
-       \
-       }\
-      \
-      .PartOfSpeach{\
-        font-style: oblique;\
-      }\
-      .PartOfSpeach::before{\
-        content : "(";\
-      }\
-      .PartOfSpeach::after{\
-        content : ")";\
-      }\
-      .Controller fieldset{\
-        border: 1px solid grey;\
-      }\
-      .Controller{\
-        margin : auto;\
-        width: auto;\
-        height: auto;\
-        margin-top: 15px;\
-       \
-      }\
-      .Controller table{\
-        /*display : inline-block;\
-        margin: 0px;\
-        padding: 0px;\
-        box-sizing : border-box;*/\
-        border-spacing: 8px;\
-        width : 100%;\
-       \
-\
-      }\
-      .Controller td{\
-        text-align : center;\
-      }\
-      .Controller textarea{\
-        width : 100%;\
-        margin : auto;\
-        position : relative;\
-        top : 2px;\
-        box-sizing : border-box;\
-      }\
-      \
-      .Controller button{\
-        width : 100%;\
-        height : 100%;\
-      }\
-      .Controller select{\
-       font-size : 100%;\
-      }\
-      .ResultBlock{\
-        text-align : center;\
-        /*box-sizing : border-box;*/\
-        width : auto;\
-      }\
-       /*кнопки-стрелки*/\
-      .arrowDown, .arrowUp {\
+       /*кнопки-стрелки*/
+      '.arrowDown, .arrowUp {\
         height: 6px;\
         width: 64px;\
       }\
@@ -905,8 +755,8 @@ var view = (function() {
   function init() {
     HTML.createWidget();
     CSS.createStyleTag();
-    HTML.addPrefixes(prefix);
-    CSS.addPrefixes(prefix);
+    //HTML.addPrefixes(prefix);
+    //CSS.addPrefixes(prefix);
     append(HTML.getWidget());
     append(CSS.getStyleTag());
     eventHandler.run();
